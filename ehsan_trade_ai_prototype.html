@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>Ehsan Trade AI</title>
+<style>
+:root{--bg:#0b1220;--panel:#121d30;--panel2:#17243a;--text:#eef4ff;--muted:#a7b5cc;--green:#29d391;--red:#ff647c;--gold:#f5c451;--line:#2a3a55}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1220,#101b2d);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:1.35rem}.brand span{color:var(--gold)}.badge{font-size:.8rem;border:1px solid #66572e;color:var(--gold);padding:6px 10px;border-radius:999px}
+h1{font-size:1.55rem;margin:24px 0 8px}.sub{color:var(--muted);line-height:1.8;margin:0 0 18px}
+.notice{background:#2b2414;border:1px solid #6b5524;color:#ffe7a1;padding:12px;border-radius:12px;line-height:1.8;font-size:.92rem}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px}
+.label{color:var(--muted);font-size:.85rem}.value{font-size:1.2rem;font-weight:750;margin-top:6px}.marketlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.market{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.market strong{display:block}.status{font-size:.78rem;color:var(--muted)}button,select{font:inherit;border-radius:10px;border:1px solid var(--line);padding:10px 12px;background:#1c2b43;color:var(--text)}
+button{cursor:pointer}button.primary{background:var(--gold);color:#1a1a1a;font-weight:800;border:0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+ul{padding-right:20px;line-height:1.9;color:var(--muted)}.small{font-size:.82rem;color:var(--muted);line-height:1.8}.footer{margin:22px 0;color:var(--muted);font-size:.8rem}
+@media(max-width:560px){.grid,.marketlist{grid-template-columns:1fr}.wrap{padding:14px}h1{font-size:1.3rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">Ehsan <span>Trade AI</span></div><div class="badge">نسخه اولیه • حالت آزمایشی</div></div>
+  <h1>داشبورد تحلیل طلا و فارکس</h1>
+  <p class="sub">هدف: بررسی چند بازار، فیلترکردن موقعیت‌های ضعیف و نمایش دلیل هر سیگنال؛ بدون ثبت سفارش خودکار.</p>
+  <div class="notice"><strong>وضعیت فعلی:</strong> این نمونه هنوز به قیمت زنده متصل نیست؛ بنابراین هیچ سیگنال زنده‌ای صادر نمی‌کند. تا اتصال منبع داده، از اعداد یا وضعیت‌های این صفحه برای معامله استفاده نکنید.</div>
+
+  <div class="grid">
+    <div class="card"><div class="label">بازارهای تحت پوشش</div><div class="value">طلا + جفت‌ارزهای اصلی</div></div>
+    <div class="card"><div class="label">تایم‌فریم‌های برنامه‌ریزی‌شده</div><div class="value">۱۵ دقیقه / ۱ ساعت / ۴ ساعت</div></div>
+    <div class="card"><div class="label">قواعد سیگنال</div><div class="value">تأیید چندمرحله‌ای</div></div>
+    <div class="card"><div class="label">وضعیت معاملات خودکار</div><div class="value">غیرفعال</div></div>
+  </div>
+
+  <div class="card">
+    <h2>فهرست بازارها</h2>
+    <div class="marketlist">
+      <div class="market"><div><strong>XAUUSD · طلا</strong><span class="status">منتظر اتصال داده</span></div><span>🟡</span></div>
+      <div class="market"><div><strong>EURUSD</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>GBPUSD</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>USDJPY</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>USDCHF</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>AUDUSD</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>USDCAD</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+      <div class="market"><div><strong>NZDUSD</strong><span class="status">منتظر اتصال داده</span></div><span>⚪</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px">
+    <h2>موتور تحلیل موردنظر</h2>
+    <ul>
+      <li>جهت روند: EMA 20 / 50 / 200</li>
+      <li>قدرت حرکت: RSI 14 و MACD</li>
+      <li>فیلتر روند و ابر: Ichimoku</li>
+      <li>ساختار بازار: حمایت، مقاومت، شکست و پولبک</li>
+      <li>مدیریت معامله: ATR، حد ضرر، حد سود و نسبت سود به زیان</li>
+      <li>تأیید چندتایم‌فریمی و بررسی پس از بسته‌شدن کندل</li>
+    </ul>
+    <p class="small">امتیاز سیگنال به‌تنهایی تضمین سود نیست. پیش از استفاده واقعی باید قوانین با داده‌های تاریخی و حساب آزمایشی ارزیابی شوند، از جمله هزینه اسپرد، لغزش قیمت و افت سرمایه.</p>
+  </div>
+
+  <div class="row">
+    <label for="mode">نمایش وضعیت:</label>
+    <select id="mode"><option value="plan">برنامه ساخت</option><option value="rules">قواعد سیگنال</option></select>
+    <button class="primary" id="show">نمایش</button>
+  </div>
+  <div class="card" id="detail" aria-live="polite">
+    <h2>گام بعدی</h2>
+    <p>اتصال یک منبع داده بازار که روی موبایل و در منطقه شما در دسترس باشد؛ سپس محاسبه اندیکاتورها و آزمون قوانین سیگنال.</p>
+  </div>
+  <div class="footer">Ehsan Trade AI • نمونه اولیه رابط کاربری • بدون داده زنده و بدون توصیه مالی</div>
+</div>
+<script>
+const detail=document.getElementById('detail');
+document.getElementById('show').addEventListener('click',()=>{
+ const mode=document.getElementById('mode').value;
+ if(mode==='rules'){
+  detail.innerHTML='<h2>قواعد پیشنهادی سیگنال</h2><ul><li>جهت روند در ۱ساعته و ۴ساعته باید با جهت معامله سازگار باشد.</li><li>در ۱۵دقیقه، EMAها و مومنتوم باید تأیید بدهند.</li><li>ورود فقط پس از بسته‌شدن کندل تأیید و بررسی ساختار قیمت بررسی می‌شود.</li><li>حد ضرر باید پشت سطح ساختاری معتبر و متناسب با ATR باشد.</li><li>اگر نسبت سود به زیان یا کیفیت داده مناسب نباشد، سیگنالی صادر نمی‌شود.</li></ul><p class="small">این قواعد هنوز کالیبره و بک‌تست نشده‌اند و فعلاً موتور سیگنال فعال نیست.</p>';
+ }else{
+  detail.innerHTML='<h2>گام‌های ساخت</h2><ol><li>انتخاب منبع داده قابل‌اعتماد برای طلا و فارکس.</li><li>ساخت موتور محاسبه اندیکاتورها.</li><li>نمایش فلش‌ها، ورود، حد ضرر و حد سود.</li><li>آزمون تاریخی و حساب دمو و گزارش عملکرد.</li><li>افزودن هشدار موبایلی در صورت پشتیبانی.</li></ol><p class="small">تا تکمیل اتصال داده و آزمون، این برنامه سیگنال قابل معامله تولید نمی‌کند.</p>';
+ }
+});
+</script>
+</body>
+</html>
