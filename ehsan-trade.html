@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ehsan Trade AI</title>
+
+<style>
+body {
+  margin: 0;
+  padding: 18px;
+  background: #101827;
+  color: #f1f5f9;
+  font-family: Tahoma, Arial, sans-serif;
+}
+.container {
+  max-width: 500px;
+  margin: auto;
+}
+h1 {
+  color: #34d399;
+  text-align: center;
+  font-size: 25px;
+}
+.subtitle {
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+.card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+}
+label {
+  display: block;
+  margin-top: 13px;
+  margin-bottom: 7px;
+}
+input, select, button {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  font-size: 16px;
+}
+input, select {
+  background: #0f172a;
+  color: white;
+}
+button {
+  margin-top: 18px;
+  background: #059669;
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+#result {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  background: #334155;
+}
+.note {
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 2;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>🌟 Ehsan Trade AI</h1>
+<p class="subtitle">دستیار تحلیل تکنیکال بازار طلا و فارکس</p>
+
+<div class="card">
+<label>نماد معاملاتی</label>
+<select id="symbol">
+<option value="XAUUSD">طلا - XAUUSD</option>
+<option value="EURUSD">یورو/دلار - EURUSD</option>
+<option value="GBPUSD">پوند/دلار - GBPUSD</option>
+<option value="USDJPY">دلار/ین - USDJPY</option>
+</select>
+
+<label>قیمت بسته‌شدن آخرین کندل</label>
+<input id="price" type="number" step="any" placeholder="قیمت بسته‌شدن">
+
+<label>مقدار EMA20</label>
+<input id="ema20" type="number" step="any" placeholder="مقدار EMA20">
+
+<label>مقدار EMA50</label>
+<input id="ema50" type="number" step="any" placeholder="مقدار EMA50">
+
+<label>مقدار EMA200</label>
+<input id="ema200" type="number" step="any" placeholder="مقدار EMA200">
+
+<label>مقدار RSI14 (بین صفر تا 100)</label>
+<input id="rsi" type="number" min="0" max="100" step="any" placeholder="مثلاً 55">
+
+<label>تأیید روند در تایم‌فریم یک‌ساعته</label>
+<select id="trend">
+<option value="unknown">بررسی نشده</option>
+<option value="up">روند صعودی</option>
+<option value="down">روند نزولی</option>
+</select>
+
+<button onclick="analyze()">🔍 تحلیل شرایط بازار</button>
+
+<div id="result">منتظر ورود اطلاعات</div>
+<p id="details" class="note"></p>
+</div>
+
+<div class="card">
+<h3>📘 روش استفاده</h3>
+<p class="note">
+۱. مقادیر را از نمودار خود در MT5 وارد کنید.<br>
+۲. اطلاعات باید مربوط به یک نماد و یک تایم‌فریم باشند.<br>
+۳. برای شروع، از نمودار ۱۵ دقیقه‌ای استفاده کنید.<br>
+۴. تحلیل را پس از بسته‌شدن کندل انجام دهید.<br>
+۵. این ابزار هنوز به قیمت زنده متصل نیست.
+</p>
+</div>
+
+<div class="card">
+<h3>⚠️ مدیریت ریسک</h3>
+<p class="note">
+هیچ سیگنالی قطعی نیست. پیش از معامله، حد ضرر،
+حجم معامله و میزان زیان احتمالی را بررسی کنید.
+ابتدا نتایج را در حساب آزمایشی ارزیابی کنید.
+</p>
+</div>
+
+</div>
+
+<script>
+function analyze() {
+  const price = Number(document.getElementById("price").value);
+  const e20 = Number(document.getElementById("ema20").value);
+  const e50 = Number(document.getElementById("ema50").value);
+  const e200 = Number(document.getElementById("ema200").value);
+  const rsi = Number(document.getElementById("rsi").value);
+  const trend = document.getElementById("trend").value;
+
+  const result = document.getElementById("result");
+  const details = document.getElementById("details");
+
+  const fields = ["price", "ema20", "ema50", "ema200", "rsi"];
+  for (const id of fields) {
+    const el = document.getElementById(id);
+    if (el.value.trim() === "" || !Number.isFinite(Number(el.value))) {
+      result.textContent = "اطلاعات ناقص است";
+      details.textContent = "لطفاً تمام مقادیر را وارد کنید.";
+      return;
+    }
+  }
+
+  if (price <= 0 || e20 <= 0 || e50 <= 0 ||
+      e200 <= 0 || rsi < 0 || rsi > 100) {
+    result.textContent = "اطلاعات نامعتبر";
+    details.textContent = "قیمت و EMAها باید مثبت باشند و RSI بین صفر و 100 باشد.";
+    return;
+  }
+
+  let signal = "⏳ صبر کن (WAIT)";
+  let explanation = "شرایط ورود کامل نیست؛ برای تأیید بیشتر صبر کن.";
+
+  const bullish =
+    price > e20 &&
+    e20 > e50 &&
+    price > e200 &&
+    rsi >= 50 &&
+    rsi < 70;
+
+  const bearish =
+    price < e20 &&
+    e20 < e50 &&
+    price < e200 &&
+    rsi > 30 &&
+    rsi <= 50;
+
+  if (bullish && trend === "up") {
+    signal = "🟢 شرایط احتمالی خرید (BUY)";
+    explanation = "روند و اندیکاتورها با هم هم‌جهت هستند؛ حمایت و حد ضرر را بررسی کن.";
+  } else if (bearish && trend === "down") {
+    signal = "🔴 شرایط احتمالی فروش (SELL)";
+    explanation = "روند و اندیکاتورها نزولی هستند؛ مقاومت و حد ضرر را بررسی کن.";
+  } else if (bullish || bearish) {
+    signal = "🟡 سیگنال نیازمند تأیید";
+    explanation = "شرایط اندیکاتورها تا حدی مناسب است، اما تأیید تایم‌فریم یک‌ساعته کامل نیست.";
+  }
+
+  result.textContent = signal;
+  details.textContent = explanation +
+    " این نتیجه فقط بر اساس اعداد واردشده محاسبه شده است.";
+}
+</script>
+
+</body>
+</html>
