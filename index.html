@@ -7,7 +7,72 @@
 <title>Ehsan Trade AI</title>
 <style>
 :root{--bg:#0b1220;--panel:#121d30;--panel2:#17243a;--text:#eef4ff;--muted:#a7b5cc;--green:#29d391;--red:#ff647c;--gold:#f5c451;--line:#2a3a55}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1220,#101b2d);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+*{box-sizing:border-box}
+<section id="ehsan-analysis" style="background:#10251f;color:white;padding:18px;border-radius:14px;margin:16px auto;max-width:500px;font-family:Arial,sans-serif">
+<h2 style="color:#36d399">🤖 تحلیل‌گر احسان ترید AI</h2>
+<p>اطلاعات کندل بسته‌شده را وارد کن:</p>
+
+<label>قیمت فعلی</label>
+<input id="price" type="number" step="any" placeholder="مثلاً 4050" style="width:95%;padding:10px;margin:6px 0 12px">
+
+<label>EMA 20</label>
+<input id="ema20" type="number" step="any" style="width:95%;padding:10px;margin:6px 0 12px">
+
+<label>EMA 50</label>
+<input id="ema50" type="number" step="any" style="width:95%;padding:10px;margin:6px 0 12px">
+
+<label>EMA 200</label>
+<input id="ema200" type="number" step="any" style="width:95%;padding:10px;margin:6px 0 12px">
+
+<label>RSI 14 (از 0 تا 100)</label>
+<input id="rsi" type="number" min="0" max="100" step="any" placeholder="مثلاً 55" style="width:95%;padding:10px;margin:6px 0 12px">
+
+<label>روند یک‌ساعته</label>
+<select id="trend" style="width:100%;padding:10px;margin:6px 0 12px">
+<option value="up">صعودی</option>
+<option value="down">نزولی</option>
+<option value="side">خنثی / نامشخص</option>
+</select>
+
+<button onclick="ehsanAnalyze()" style="width:100%;padding:13px;background:#20c997;color:#06251b;border:0;border-radius:8px;font-weight:bold;font-size:16px">🔍 تحلیل شرایط بازار</button>
+
+<div id="ehsan-result" style="margin-top:16px;padding:12px;background:#18382e;border-radius:8px;line-height:1.9">نتیجه تحلیل اینجا نمایش داده می‌شود.</div>
+</section>
+
+<script>
+function ehsanAnalyze(){
+ const p=Number(document.getElementById('price').value);
+ const e20=Number(document.getElementById('ema20').value);
+ const e50=Number(document.getElementById('ema50').value);
+ const e200=Number(document.getElementById('ema200').value);
+ const r=Number(document.getElementById('rsi').value);
+ const trend=document.getElementById('trend').value;
+ const out=document.getElementById('ehsan-result');
+
+ if(!document.getElementById('price').value ||
+ !document.getElementById('ema20').value ||
+ !document.getElementById('ema50').value ||
+ !document.getElementById('ema200').value ||
+ !document.getElementById('rsi').value ||
+ !Number.isFinite(p+e20+e50+e200+r) ||
+ p<=0 || e20<=0 || e50<=0 || e200<=0 || r<0 || r>100){
+ out.textContent='لطفاً همه مقادیر را درست وارد کن.';
+ return;
+ }
+
+ const buy=p>e20 && e20>e50 && e50>e200 && r>=50 && r<70 && trend==='up';
+ const sell=p<e20 && e20<e50 && e50<e200 && r<=50 && r>30 && trend==='down';
+
+ if(buy){
+ out.innerHTML='🟢 <b>تمایل صعودی</b><br>شرایط اولیه خرید برقرار است؛ قبل از تصمیم، حمایت، مقاومت و کندل بسته‌شده را بررسی کن. این سیگنال قطعی نیست.';
+ }else if(sell){
+ out.innerHTML='🔴 <b>تمایل نزولی</b><br>شرایط اولیه فروش برقرار است؛ قبل از تصمیم، حمایت، مقاومت و کندل بسته‌شده را بررسی کن. این سیگنال قطعی نیست.';
+ }else{
+ out.innerHTML='🟡 <b>شرایط ترکیبی یا نامشخص</b><br>معیارهای خرید یا فروش هم‌زمان تأیید نشده‌اند. بهتر است تا روشن‌شدن شرایط عجله نکنی.';
+ }
+}
+</script>
+body{margin:0;background:linear-gradient(180deg,#0b1220,#101b2d);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
 .wrap{max-width:900px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand{font-weight:800;font-size:1.35rem}.brand span{color:var(--gold)}.badge{font-size:.8rem;border:1px solid #66572e;color:var(--gold);padding:6px 10px;border-radius:999px}
 h1{font-size:1.55rem;margin:24px 0 8px}.sub{color:var(--muted);line-height:1.8;margin:0 0 18px}
