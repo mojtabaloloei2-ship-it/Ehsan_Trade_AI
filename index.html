@@ -1085,6 +1085,31 @@ entrySignal.style.animation = "ehsanAlert 0.8s infinite alternate";
   el("proRefresh").addEventListener("click",runProAnalysis);
   runProAnalysis();
   setInterval(runProAnalysis,300000);
+
+const soundButton = document.getElementById("enableSound");
+const soundStatus = document.getElementById("soundStatus");
+
+let soundEnabled = false;
+
+if (soundButton && soundStatus) {
+  soundButton.addEventListener("click", function () {
+    if (!("speechSynthesis" in window)) {
+      soundStatus.textContent = "مرورگر شما از هشدار صوتی پشتیبانی نمی‌کند.";
+      return;
+    }
+
+    const message = new SpeechSynthesisUtterance("هشدار صوتی احسان ترید فعال شد");
+    message.lang = "fa-IR";
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(message);
+
+    soundEnabled = true;
+    soundStatus.textContent = "هشدار صوتی فعال است.";
+    soundButton.textContent = "🔔 هشدار صوتی فعال شد";
+  });
+}
+
 })();
 </script>
 
