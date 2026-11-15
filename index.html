@@ -481,6 +481,45 @@ detail.innerHTML=
 (function(){
   const el=id=>document.getElementById(id);
 
+  let soundEnabled = false;
+  let previousSignal = "NONE";
+  let audioContext = null;
+
+  function playSignalAlert(){
+    if(!soundEnabled || !audioContext) return;
+
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.frequency.value = 750;
+    gain.gain.value = 0.15;
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.25);
+  }
+
+  el("enableSound").addEventListener("click", async function(){
+    try{
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(!AudioCtx) throw new Error("صدا پشتیبانی نمی‌شود");
+
+      audioContext = audioContext || new AudioCtx();
+
+      if(audioContext.state === "suspended"){
+        await audioContext.resume();
+      }
+
+      soundEnabled = true;
+      el("soundStatus").textContent = "هشدار صوتی فعال است.";
+    }catch(error){
+      el("soundStatus").textContent =
+        "فعال‌سازی صدا ناموفق بود؛ تنظیمات مرورگر را بررسی کن.";
+    }
+  });
+
   function ema(values,period){
     if(values.length<period)return null;
     let result=values.slice(0,period).reduce((a,b)=>a+b,0)/period;
@@ -626,8 +665,6 @@ detail.innerHTML=
 <div id="entryDetails" style="font-size:13px;color:#b9c9d9;margin-top:8px">
   بررسی روند، شکست حمایت و مقاومت و تأیید سه تایم‌فریم
 </div>
-
-<div id="tradeLevels" 
 <div style="margin-top:12px">
   <button id="enableSound" type="button" style="background:#d9b66c;color:#091629;border:0;border-radius:9px;padding:11px 16px;font-weight:bold">
     🔔 فعال‌سازی هشدار صوتی
@@ -919,6 +956,38 @@ const alignedSell =
       }
 
       // محاسبه آزمایشی سطوح ورود و مدیریت ریسک
+      
+      // هشدار هنگام تغییر وضعیت ورود
+      const currentSignal = alignedBuy ? "BUY" :
+                            alignedSell ? "SELL" : "NONE";
+
+      if(currentSignal !== previousSignal){
+        if(currentSignal === "BUY" || currentSignal === "SELL"){
+          entrySignal.style.textShadow = "0 0 12px currentColor";
+
+          el("entryDecision").style.borderColor =
+            currentSignal === "BUY" ? "#29d391" : "#ff647c";
+
+          el("entryDecision").style.boxShadow =
+            "0 0 14px " +
+            (currentSignal === "BUY" ? "#29d391" : "#ff647c");
+
+          entryDetails.textContent =
+            "🔔 هشدار: سیگنال جدید " +
+            (currentSignal === "BUY" ? "خرید" : "فروش") +
+            " شناسایی شد. قیمت بروکر و حد ضرر را بررسی کن.";
+
+          if(soundEnabled) playSignalAlert();
+
+        }else{
+          entrySignal.style.textShadow = "none";
+          el("entryDecision").style.boxShadow = "none";
+          el("entryDecision").style.borderColor = "#d9b66c";
+        }
+
+        previousSignal = currentSignal;
+      }
+
       const levels = el("tradeLevels");
 
       if (alignedBuy || alignedSell) {
