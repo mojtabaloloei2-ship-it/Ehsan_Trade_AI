@@ -283,23 +283,44 @@ const sell=
 p<e20 && e20<e50 && e50<e200 &&
 r<=50 && r>30 && trend==='down';
 
-if(buy){
-out.innerHTML=
-'🟢 <strong>تمایل صعودی</strong><br>'+
-'شرایط اولیه خرید برقرار است. '+
-'قبل از هر تصمیم، کندل بسته‌شده، حمایت و مقاومت را بررسی کن. '+
-'این نتیجه سیگنال قطعی نیست.';
-}else if(sell){
-out.innerHTML=
-'🔴 <strong>تمایل نزولی</strong><br>'+
-'شرایط اولیه فروش برقرار است. '+
-'قبل از هر تصمیم، کندل بسته‌شده، حمایت و مقاومت را بررسی کن. '+
-'این نتیجه سیگنال قطعی نیست.';
-}else{
-out.innerHTML=
-'🟡 <strong>شرایط ترکیبی یا نامشخص</strong><br>'+
-'معیارهای خرید یا فروش هم‌زمان تأیید نشده‌اند. '+
-'فعلاً بهتر است برای تصمیم معاملاتی عجله نکنی.';
+
+let alertType = "neutral";
+
+if (buy) {
+  out.innerHTML =
+    '🟢 <strong>تمایل صعودی</strong><br>' +
+    'شرایط اولیه خرید برقرار است. ' +
+    'قبل از هر تصمیم، کندل بسته‌شده، حمایت و مقاومت را بررسی کن. ' +
+    'این نتیجه سیگنال قطعی نیست.';
+
+  alertType = "buy";
+
+} else if (sell) {
+  out.innerHTML =
+    '🔴 <strong>تمایل نزولی</strong><br>' +
+    'شرایط اولیه فروش برقرار است. ' +
+    'قبل از هر تصمیم، کندل بسته‌شده، حمایت و مقاومت را بررسی کن. ' +
+    'این نتیجه سیگنال قطعی نیست.';
+
+  alertType = "sell";
+
+} else {
+  out.innerHTML =
+    '🟡 <strong>شرایط ترکیبی یا نامشخص</strong><br>' +
+    'معیارهای خرید یا فروش هم‌زمان تأیید نشده‌اند. ' +
+    'فعلاً بهتر است برای تصمیم معاملاتی عجله نکنی.';
+}
+
+if (window.ehsanLastAlert !== alertType) {
+  if (alertType === "buy" && window.ehsanSpeakAlert) {
+    window.ehsanSpeakAlert("هشدار احسان ترید، شرایط اولیه خرید برقرار شده است.");
+  }
+
+  if (alertType === "sell" && window.ehsanSpeakAlert) {
+    window.ehsanSpeakAlert("هشدار احسان ترید، شرایط اولیه فروش برقرار شده است.");
+  }
+
+  window.ehsanLastAlert = alertType;
 }
 }
 
