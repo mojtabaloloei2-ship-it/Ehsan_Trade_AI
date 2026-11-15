@@ -1091,25 +1091,58 @@ const soundStatus = document.getElementById("soundStatus");
 
 let soundEnabled = false;
 
+
 if (soundButton && soundStatus) {
   soundButton.addEventListener("click", function () {
     if (!("speechSynthesis" in window)) {
-      soundStatus.textContent = "مرورگر شما از هشدار صوتی پشتیبانی نمی‌کند.";
+      soundStatus.textContent = "مرورگر از گفتار پشتیبانی نمی‌کند.";
       return;
     }
 
-    const message = new SpeechSynthesisUtterance("هشدار صوتی احسان ترید فعال شد");
-    message.lang = "fa-IR";
+    const synth = window.speechSynthesis;
+    synth.cancel();
 
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(message);
+    const speak = () => {
+      const voices = synth.getVoices();
+
+      const persianVoice = voices.find(v =>
+        v.lang.toLowerCase().startsWith("fa")
+      );
+
+      const message = new SpeechSynthesisUtterance(
+        "هشدار صوتی احسان ترید فعال شد"
+      );
+
+      message.lang = "fa-IR";
+      message.rate = 0.85;
+      message.pitch = 1;
+      message.volume = 1;
+
+      if (persianVoice) {
+        message.voice = persianVoice;
+      }
+
+      message.onstart = () => {
+        soundStatus.textContent = "صدای هشدار در حال پخش است.";
+      };
+
+      message.onend = () => {
+        soundStatus.textContent = "هشدار صوتی فعال است.";
+      };
+
+      message.onerror = () => {
+        soundStatus.textContent = "خطا در پخش گفتار؛ صدای فارسی گوشی را بررسی کنید.";
+      };
+
+      synth.speak(message);
+    };
+
+    speak();
 
     soundEnabled = true;
-    soundStatus.textContent = "هشدار صوتی فعال است.";
     soundButton.textContent = "🔔 هشدار صوتی فعال شد";
   });
 }
-
 })();
 </script>
 
