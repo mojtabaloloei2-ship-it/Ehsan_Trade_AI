@@ -327,5 +327,139 @@ detail.innerHTML=
 });
 </script>
 
+<section id="ehsan-live-gold" style="background:#10243d;color:#fff;border:1px solid #36c8bd;border-radius:14px;padding:16px;margin:20px 0;font-family:Tahoma,sans-serif;line-height:2">
+  <h2 style="color:#36c8bd;margin-top:0">اتصال زنده طلای جهانی | EHSAN</h2>
+  <div>قیمت لحظه‌ای اونس طلا: <strong id="ehsanGoldPrice">در حال دریافت...</strong></div>
+  <div>آخرین به‌روزرسانی: <span id="ehsanGoldTime">---</span></div>
+  <div>وضعیت داده: <span id="ehsanGoldStatus">در حال اتصال...</span></div>
+  <hr style="border-color:#36516d">
+  <h3 style="color:#d9b66c">اندیکاتورهای خودکار</h3>
+  <div>EMA 20: <span id="ehsanEMA20">---</span></div>
+  <div>EMA 50: <span id="ehsanEMA50">---</span></div>
+  <div>EMA 200: <span id="ehsanEMA200">---</span></div>
+  <div>RSI 14: <span id="ehsanRSI">---</span></div>
+  <div>وضعیت تحلیل: <strong id="ehsanGoldSignal">در انتظار داده کندلی</strong></div>
+  <p style="font-size:12px;color:#b9c9d9;margin-bottom:0">
+    منبع: XAUS | قیمت مرجع جهانی، نه قیمت معاملاتی کارگزاری
+  </p>
+</section>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  function show(id, value){
+    $(id).textContent = value;
+  }
+
+  function ema(values, period){
+    if(values.length < period) return null;
+    let result = values.slice(0, period)
+      .reduce((a,b)=>a+b,0)/period;
+    const k = 2/(period+1);
+    for(let i=period;i<values.length;i++){
+      result = values[i]*k + result*(1-k);
+    }
+    return result;
+  }
+
+  function rsi(values, period=14){
+    if(values.length < period+1) return null;
+    let gains=0, losses=0;
+    for(let i=1;i<=period;i++){
+      const change=values[i]-values[i-1];
+      if(change>0) gains+=change;
+      else losses-=change;
+    }
+    let avgGain=gains/period;
+    let avgLoss=losses/period;
+    for(let i=period+1;i<values.length;i++){
+      const change=values[i]-values[i-1];
+      avgGain=(avgGain*(period-1)+Math.max(change,0))/period;
+      avgLoss=(avgLoss*(period-1)+Math.max(-change,0))/period;
+    }
+    if(avgLoss===0) return 100;
+    return 100-(100/(1+avgGain/avgLoss));
+  }
+
+  async function loadGold(){
+    try{
+      show("ehsanGoldStatus","در حال دریافت قیمت...");
+      const response=await fetch(
+        "https://xaus.com/api/v1/spot?compact=1",
+        {cache:"no-store"}
+      );
+      if(!response.ok) throw new Error("خطای دریافت قیمت");
+      const data=await response.json();
+      const price=Number(data.spot_usd_oz);
+
+      if(!Number.isFinite(price) || price<=0)
+        throw new Error("قیمت معتبر دریافت نشد");
+
+      show("ehsanGoldPrice",price.toFixed(2)+" USD");
+      const updated=data.price_as_of || data.updated_at;
+      show("ehsanGoldTime",updated ? new Date(updated).toLocaleString("fa-IR") : "نامشخص");
+
+      const age=data.data_state?.age_seconds;
+      const stale=data.stale===true || data.data_state?.status==="stale";
+      if(stale || (Number.isFinite(age) && age>300)){
+        show("ehsanGoldStatus","داده قدیمی؛ برای معامله قابل اتکا نیست");
+      }else{
+        show("ehsanGoldStatus","قیمت دریافت شد؛ مرجع جهانی");
+      }
+
+      await loadCandles(price);
+    }catch(error){
+      show("ehsanGoldStatus","اتصال ناموفق: "+error.message);
+      show("ehsanGoldSignal","داده کافی برای تحلیل نداریم");
+    }
+  }
+
+  async function loadCandles(spot){
+    try{
+      const response=await fetch(
+        "https://xaus.com/api/v1/chart?symbol=xau&range=5d&interval=5m",
+        {cache:"no-store"}
+      );
+      if(!response.ok) throw new Error("دریافت کندل ناموفق بود");
+      const data=await response.json();
+      const points=Array.isArray(data.points)?data.points:[];
+      const closes=points
+        .map(p=>Number(p.c))
+        .filter(v=>Number.isFinite(v)&&v>0);
+
+      if(closes.length<201){
+        show("ehsanGoldSignal","تعداد کندل‌ها برای تحلیل کافی نیست");
+        return;
+      }
+
+      const e20=ema(closes,20);
+      const e50=ema(closes,50);
+      const e200=ema(closes,200);
+      const r=rsi(closes,14);
+
+      show("ehsanEMA20",e20.toFixed(2));
+      show("ehsanEMA50",e50.toFixed(2));
+      show("ehsanEMA200",e200.toFixed(2));
+      show("ehsanRSI",r.toFixed(2));
+
+      const last=closes[closes.length-1];
+      if(last>e20 && e20>e50 && e50>e200 && r>=50 && r<70){
+        show("ehsanGoldSignal","تمایل صعودی؛ تأیید نهایی لازم است");
+      }else if(last<e20 && e20<e50 && e50<e200 && r>30 && r<=50){
+        show("ehsanGoldSignal","تمایل نزولی؛ تأیید نهایی لازم است");
+      }else{
+        show("ehsanGoldSignal","شرایط ترکیبی یا نامشخص");
+      }
+    }catch(error){
+      show("ehsanGoldSignal","داده کندلی دریافت نشد؛ تحلیل خودکار انجام نشد");
+    }
+  }
+
+  loadGold();
+  setInterval(loadGold,60000);
+})();
+</script>
+
 </body>
 </html>
