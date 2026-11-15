@@ -98,6 +98,16 @@ background:#17243a;line-height:2;border:1px solid var(--line)
 .wrap{padding:14px}
 h1{font-size:1.3rem}
 }
+@keyframes ehsanAlert {
+  from {
+    opacity: 1;
+    box-shadow: 0 0 5px currentColor;
+  }
+  to {
+    opacity: 0.55;
+    box-shadow: 0 0 20px currentColor;
+  }
+}
 </style>
 </head>
 
@@ -668,8 +678,20 @@ detail.innerHTML=
 
 <div id="entryDecision" style="background:#172b43;border:1px solid #d9b66c;border-radius:12px;padding:14px;margin-top:14px;text-align:center">
   <h3 style="color:#d9b66c;margin-top:0">نقطه ورود هوشمند EHSAN</h3>
-  <div id="entrySignal" style="font-size:20px;font-weight:bold">در انتظار تأیید شرایط ورود...</div>
   
+  <div id="entrySignal" style="
+  font-size:20px;
+  font-weight:bold;
+  padding:14px;
+  margin:10px 0;
+  border:2px solid #d9b66c;
+  border-radius:12px;
+  background:#263c50;
+  color:#d9b66c;
+  transition:all 0.3s ease;
+">
+  ⏳ عدم ورود؛ منتظر تأیید شرایط بازار
+</div>
 
 <div id="entryDetails" style="font-size:13px;color:#b9c9d9;margin-top:8px">
   بررسی روند، شکست حمایت و مقاومت و تأیید سه تایم‌فریم
@@ -949,16 +971,23 @@ const alignedSell =
 
       if (alignedBuy) {
         entrySignal.textContent = "خرید (BUY)";
+        entrySignal.style.background = "#123d30";
+entrySignal.style.borderColor = "#29d391";
         entrySignal.style.color = "#29d391";
         entryDetails.textContent =
           "هم‌جهتی صعودی سه تایم‌فریم تأیید شده؛ پیش از ورود، قیمت کارگزاری و حد ضرر را بررسی کن.";
       } else if (alignedSell) {
         entrySignal.textContent = "فروش (SELL)";
+        entrySignal.style.background = "#4a1825";
+entrySignal.style.borderColor = "#ff647c";
         entrySignal.style.color = "#ff647c";
         entryDetails.textContent =
           "هم‌جهتی نزولی سه تایم‌فریم تأیید شده؛ پیش از ورود، قیمت کارگزاری و حد ضرر را بررسی کن.";
       } else {
         entrySignal.textContent = "عدم ورود";
+       entrySignal.style.background = "#263c50";
+entrySignal.style.borderColor = "#d9b66c";
+entrySignal.style.boxShadow = "none";
         entrySignal.style.color = "#d9b66c";
         entryDetails.textContent =
           "تأیید کافی در سه تایم‌فریم وجود ندارد؛ منتظر شرایط بهتر بمان.";
@@ -973,7 +1002,7 @@ const alignedSell =
       if(currentSignal !== previousSignal){
         if(currentSignal === "BUY" || currentSignal === "SELL"){
           entrySignal.style.textShadow = "0 0 12px currentColor";
-
+entrySignal.style.animation = "ehsanAlert 0.8s infinite alternate";
           el("entryDecision").style.borderColor =
             currentSignal === "BUY" ? "#29d391" : "#ff647c";
 
