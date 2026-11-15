@@ -591,5 +591,255 @@ detail.innerHTML=
 })();
 </script>
 
+<section id="ehsan-pro-ai" style="background:#10243d;color:#fff;border:1px solid #36c8bd;border-radius:15px;padding:16px;margin:20px 0;font-family:Tahoma,sans-serif;line-height:2">
+  <h2 style="color:#36c8bd;margin-top:0">موتور پیشرفته تحلیل EHSAN AI</h2>
+
+  <h3 style="color:#d9b66c">امتیاز قدرت خرید و فروش</h3>
+  <div>امتیاز خرید: <strong id="proBuyScore">---</strong> از ۱۰۰</div>
+  <div style="background:#263c50;border-radius:8px;height:12px;overflow:hidden">
+    <div id="proBuyBar" style="height:12px;width:0;background:#29d391"></div>
+  </div>
+  <div style="margin-top:10px">امتیاز فروش: <strong id="proSellScore">---</strong> از ۱۰۰</div>
+  <div style="background:#263c50;border-radius:8px;height:12px;overflow:hidden">
+    <div id="proSellBar" style="height:12px;width:0;background:#ff647c"></div>
+  </div>
+
+  <hr style="border-color:#36516d">
+  <h3 style="color:#d9b66c">تحلیل چندتایم‌فریمی طلا</h3>
+  <div id="proTimeframes">در حال دریافت اطلاعات بازار...</div>
+
+  <hr style="border-color:#36516d">
+  <h3 style="color:#d9b66c">تشخیص واگرایی RSI</h3>
+  <div id="proDivergence">در انتظار داده...</div>
+
+  <hr style="border-color:#36516d">
+  <div id="proConclusion" style="padding:12px;background:#172b43;border-radius:10px">
+    نتیجه نهایی در انتظار تحلیل است.
+  </div>
+
+  <button id="proRefresh" type="button" style="background:#36c8bd;color:#091629;border:0;border-radius:9px;padding:12px 18px;font-weight:bold;margin-top:15px">
+    به‌روزرسانی تحلیل پیشرفته
+  </button>
+
+  <p style="font-size:11px;color:#b9c9d9">
+    منبع داده: XAUS | امتیازها ابزار سنجش شرایط تکنیکی هستند، نه احتمال سود یا توصیه معاملاتی.
+  </p>
+</section>
+
+<script>
+(function(){
+  const el=id=>document.getElementById(id);
+
+  function ema(values,period){
+    if(values.length<period)return null;
+    let result=values.slice(0,period)
+      .reduce((a,b)=>a+b,0)/period;
+    const k=2/(period+1);
+    for(let i=period;i<values.length;i++){
+      result=values[i]*k+result*(1-k);
+    }
+    return result;
+  }
+
+  function rsiSeries(values,period=14){
+    const result=Array(values.length).fill(null);
+    if(values.length<period+1)return result;
+
+    let gain=0,loss=0;
+
+    for(let i=1;i<=period;i++){
+      const d=values[i]-values[i-1];
+      if(d>0)gain+=d;
+      else loss-=d;
+    }
+
+    let ag=gain/period;
+    let al=loss/period;
+
+    result[period]=al===0?100:100-100/(1+ag/al);
+
+    for(let i=period+1;i<values.length;i++){
+      const d=values[i]-values[i-1];
+      ag=(ag*(period-1)+Math.max(d,0))/period;
+      al=(al*(period-1)+Math.max(-d,0))/period;
+      result[i]=al===0?100:100-100/(1+ag/al);
+    }
+    return result;
+  }
+
+  function analyze(points){
+    const closes=points.map(p=>Number(p.c));
+    if(closes.length<201)throw new Error("کندل کافی نیست");
+
+    const last=closes[closes.length-1];
+    const e20=ema(closes,20);
+    const e50=ema(closes,50);
+    const e200=ema(closes,200);
+    const rValues=rsiSeries(closes);
+    const r=rValues[rValues.length-1];
+    const previous=ema(closes.slice(0,-5),20);
+
+    let buy=0,sell=0;
+
+    if(last>e20)buy+=20;
+    else sell+=20;
+
+    if(e20>e50)buy+=20;
+    else sell+=20;
+
+    if(e50>e200)buy+=20;
+    else sell+=20;
+
+    if(r>55)buy+=20;
+    else if(r<45)sell+=20;
+
+    if(e20>previous)buy+=20;
+    else if(e20<previous)sell+=20;
+
+    return {
+      last,e20,e50,e200,r,buy,sell,
+      points,closes,rValues
+    };
+  }
+
+  async function getTimeframe(interval,range){
+    const url=
+      "https://xaus.com/api/v1/chart?symbol=xau"+
+      "&range="+range+"&interval="+interval;
+
+    const response=await fetch(url,{cache:"no-store"});
+    if(!response.ok)throw new Error("دریافت اطلاعات "+interval+" ناموفق بود");
+
+    const data=await response.json();
+
+    if(data.data_state?.status==="unavailable")
+      throw new Error("داده "+interval+" در دسترس نیست");
+
+    const points=Array.isArray(data.points)?data.points:[];
+    points.sort((a,b)=>Number(a.t)-Number(b.t));
+
+    return {
+      result:analyze(points),
+      freshness:data.data_state?.status || "نامشخص",
+      age:data.data_state?.age_seconds
+    };
+  }
+
+  function findPivots(points,values,rsiValues){
+    const highs=[],lows=[];
+    const left=2,right=2;
+
+    for(let i=left;i<points.length-right;i++){
+      const high=Number(points[i].h);
+      const low=Number(points[i].l);
+
+      if(!Number.isFinite(high)||!Number.isFinite(low))continue;
+
+      let isHigh=true,isLow=true;
+
+      for(let j=i-left;j<=i+right;j++){
+        if(j===i)continue;
+        if(high<=Number(points[j].h))isHigh=false;
+        if(low>=Number(points[j].l))isLow=false;
+      }
+
+      if(isHigh&&Number.isFinite(rsiValues[i]))
+        highs.push({price:high,rsi:rsiValues[i],index:i});
+
+      if(isLow&&Number.isFinite(rsiValues[i]))
+        lows.push({price:low,rsi:rsiValues[i],index:i});
+    }
+
+    const recentHighs=highs.slice(-2);
+    const recentLows=lows.slice(-2);
+
+    if(recentHighs.length===2){
+      const a=recentHighs[0],b=recentHighs[1];
+      if(b.price>a.price&&b.rsi<a.rsi)
+        return "واگرایی منفی: قیمت سقف بالاتر ساخته، RSI سقف پایین‌تر ساخته است.";
+    }
+
+    if(recentLows.length===2){
+      const a=recentLows[0],b=recentLows[1];
+      if(b.price<a.price&&b.rsi>a.rsi)
+        return "واگرایی مثبت: قیمت کف پایین‌تر ساخته، RSI کف بالاتر ساخته است.";
+    }
+
+    return "واگرایی معتبر در نقاط بررسی‌شده شناسایی نشد.";
+  }
+
+  function scoreLabel(value){
+    if(value>=80)return "هم‌راستایی قوی";
+    if(value>=60)return "هم‌راستایی متوسط";
+    if(value>=40)return "هم‌راستایی محدود";
+    return "هم‌راستایی ضعیف";
+  }
+
+  async function runProAnalysis(){
+    el("proConclusion").textContent="در حال تحلیل بازار...";
+    el("proTimeframes").textContent="در حال دریافت داده...";
+    el("proDivergence").textContent="در حال بررسی واگرایی...";
+
+    try{
+      const [m5,m15,h1]=await Promise.all([
+        getTimeframe("5m","5d"),
+        getTimeframe("15m","1mo"),
+        getTimeframe("1h","1mo")
+      ]);
+
+      const items=[
+        {name:"۵ دقیقه",data:m5},
+        {name:"۱۵ دقیقه",data:m15},
+        {name:"۱ ساعت",data:h1}
+      ];
+
+      el("proTimeframes").innerHTML=items.map(item=>{
+        const x=item.data.result;
+        return "<div style='background:#172b43;padding:10px;margin:8px 0;border-radius:8px'>"+
+          "<strong>"+item.name+"</strong><br>"+
+          "جهت: "+(x.buy>x.sell?"صعودی":x.sell>x.buy?"نزولی":"خنثی")+
+          "<br>امتیاز خرید: "+x.buy+
+          " | امتیاز فروش: "+x.sell+
+          "<br>RSI: "+x.r.toFixed(1)+
+          "<br>وضعیت تازگی داده: "+item.data.freshness+
+          "</div>";
+      }).join("");
+
+      const buy=Math.round((m5.result.buy+m15.result.buy+h1.result.buy)/3);
+      const sell=Math.round((m5.result.sell+m15.result.sell+h1.result.sell)/3);
+
+      el("proBuyScore").textContent=buy+" - "+scoreLabel(buy);
+      el("proSellScore").textContent=sell+" - "+scoreLabel(sell);
+      el("proBuyBar").style.width=buy+"%";
+      el("proSellBar").style.width=sell+"%";
+
+      el("proDivergence").textContent=
+        findPivots(m5.result.points,m5.result.closes,m5.result.rValues);
+
+      let conclusion;
+
+      if(buy>=70&&buy-sell>=20){
+        conclusion="تمایل تکنیکی صعودی؛ تأیید کندل بسته‌شده و مدیریت ریسک همچنان لازم است.";
+      }else if(sell>=70&&sell-buy>=20){
+        conclusion="تمایل تکنیکی نزولی؛ تأیید کندل بسته‌شده و مدیریت ریسک همچنان لازم است.";
+      }else{
+        conclusion="شرایط ترکیبی یا نامشخص؛ فعلاً از صدور سیگنال قطعی خودداری شود.";
+      }
+
+      el("proConclusion").textContent=conclusion;
+
+    }catch(error){
+      el("proTimeframes").textContent="خطا: "+error.message;
+      el("proConclusion").textContent=
+        "تحلیل کامل نشد؛ تا دریافت اطلاعات معتبر، نتیجه معاملاتی صادر نمی‌شود.";
+    }
+  }
+
+  el("proRefresh").addEventListener("click",runProAnalysis);
+  runProAnalysis();
+  setInterval(runProAnalysis,300000);
+})();
+</script>
+
 </body>
 </html>
