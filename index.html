@@ -621,9 +621,18 @@ detail.innerHTML=
 <div id="entryDecision" style="background:#172b43;border:1px solid #d9b66c;border-radius:12px;padding:14px;margin-top:14px;text-align:center">
   <h3 style="color:#d9b66c;margin-top:0">نقطه ورود هوشمند EHSAN</h3>
   <div id="entrySignal" style="font-size:20px;font-weight:bold">در انتظار تأیید شرایط ورود...</div>
-  <div id="entryDetails" style="font-size:13px;color:#b9c9d9;margin-top:8px">
-    بررسی روند، شکست حمایت و مقاومت و تأیید سه تایم‌فریم
-  </div>
+  
+
+<div id="entryDetails" style="font-size:13px;color:#b9c9d9;margin-top:8px">
+  بررسی روند، شکست حمایت و مقاومت و تأیید سه تایم‌فریم
+</div>
+
+<div id="tradeLevels" style="display:none;background:#0b1b2d;border:1px solid #36c8bd;border-radius:10px;padding:12px;margin-top:12px;text-align:right">
+  <div>قیمت ورود: <strong id="entryPrice">---</strong></div>
+  <div>حد ضرر (SL): <strong id="stopLoss">---</strong></div>
+  <div>هدف اول (TP1): <strong id="takeProfit1">---</strong></div>
+  <div>هدف دوم (TP2): <strong id="takeProfit2">---</strong></div>
+  <div>نسبت ریسک به بازده: <strong id="riskReward">---</strong></div>
 </div>
 
 
@@ -897,6 +906,56 @@ const alignedSell =
         entrySignal.style.color = "#d9b66c";
         entryDetails.textContent =
           "تأیید کافی در سه تایم‌فریم وجود ندارد؛ منتظر شرایط بهتر بمان.";
+      }
+
+      // محاسبه آزمایشی سطوح ورود و مدیریت ریسک
+      const levels = el("tradeLevels");
+
+      if (alignedBuy || alignedSell) {
+        const data = m5.result.points;
+        const entry = Number(lastCandle.c);
+        let trSum = 0;
+        let trCount = 0;
+
+        for (let i = Math.max(1, data.length - 14); i < data.length; i++) {
+          const high = Number(data[i].h);
+          const low = Number(data[i].l);
+          const prevClose = Number(data[i - 1].c);
+
+          const tr = Math.max(
+            high - low,
+            Math.abs(high - prevClose),
+            Math.abs(low - prevClose)
+          );
+
+          if (Number.isFinite(tr)) {
+            trSum += tr;
+            trCount++;
+          }
+        }
+
+        const atr = trCount ? trSum / trCount : 0;
+
+        if (Number.isFinite(entry) && atr > 0) {
+          const risk = atr * 1.5;
+          const buySide = alignedBuy;
+
+          const sl = buySide ? entry - risk : entry + risk;
+          const tp1 = buySide ? entry + risk : entry - risk;
+          const tp2 = buySide ? entry + risk * 2 : entry - risk * 2;
+
+          el("entryPrice").textContent = entry.toFixed(2);
+          el("stopLoss").textContent = sl.toFixed(2);
+          el("takeProfit1").textContent = tp1.toFixed(2);
+          el("takeProfit2").textContent = tp2.toFixed(2);
+          el("riskReward").textContent = "۱:۱ و ۱:۲";
+
+          levels.style.display = "block";
+        } else {
+          levels.style.display = "none";
+        }
+      } else {
+        levels.style.display = "none";
       }
 
     }catch(error){
