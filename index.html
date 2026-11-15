@@ -613,9 +613,19 @@ detail.innerHTML=
   <div id="proDivergence">در انتظار داده...</div>
 
   <hr style="border-color:#36516d">
-  <div id="proConclusion" style="padding:12px;background:#172b43;border-radius:10px">
-    نتیجه نهایی در انتظار تحلیل است.
+
+<div id="proConclusion" style="padding:12px;background:#172b43;border-radius:10px">
+  نتیجه نهایی در انتظار تحلیل است.
+</div>
+
+<div id="entryDecision" style="background:#172b43;border:1px solid #d9b66c;border-radius:12px;padding:14px;margin-top:14px;text-align:center">
+  <h3 style="color:#d9b66c;margin-top:0">نقطه ورود هوشمند EHSAN</h3>
+  <div id="entrySignal" style="font-size:20px;font-weight:bold">در انتظار تأیید شرایط ورود...</div>
+  <div id="entryDetails" style="font-size:13px;color:#b9c9d9;margin-top:8px">
+    بررسی روند، شکست حمایت و مقاومت و تأیید سه تایم‌فریم
   </div>
+</div>
+
 
   <button id="proRefresh" type="button" style="background:#36c8bd;color:#091629;border:0;border-radius:9px;padding:12px 18px;font-weight:bold;margin-top:15px">
     به‌روزرسانی تحلیل پیشرفته
@@ -827,6 +837,67 @@ detail.innerHTML=
       }
 
       el("proConclusion").textContent=conclusion;
+
+      // تصمیم ورود هوشمند؛ فقط با تأیید چند شرط هم‌زمان
+      const entrySignal = el("entrySignal");
+      const entryDetails = el("entryDetails");
+
+      // فیلتر شکست حمایت و مقاومت در تایم‌فریم ۵ دقیقه
+      const candles = m5.result.points;
+      const recent = candles.slice(-21, -1);
+      const lastCandle = candles[candles.length - 1];
+      const previousCandle = candles[candles.length - 2];
+
+      const resistance = Math.max(...recent.map(c => Number(c.h)));
+      const support = Math.min(...recent.map(c => Number(c.l)));
+
+      const breakoutUp =
+        Number(lastCandle.c) > resistance &&
+        Number(previousCandle.c) <= resistance;
+
+      const breakoutDown =
+        Number(lastCandle.c) < support &&
+        Number(previousCandle.c) >= support;
+
+      
+const alignedBuy =
+        breakoutUp &&
+        m5.result.buy >= 80 &&
+        m15.result.buy >= 80 &&
+        h1.result.buy >= 80 &&
+        buy >= 80 &&
+        buy - sell >= 25 &&
+        m5.result.last > m5.result.e20 &&
+        m15.result.last > m15.result.e20 &&
+        h1.result.last > h1.result.e20;
+
+const alignedSell =
+        breakoutDown &&
+        m5.result.sell >= 80 &&
+        m15.result.sell >= 80 &&
+        h1.result.sell >= 80 &&
+        sell >= 80 &&
+        sell - buy >= 25 &&
+        m5.result.last < m5.result.e20 &&
+        m15.result.last < m15.result.e20 &&
+        h1.result.last < h1.result.e20    
+
+      if (alignedBuy) {
+        entrySignal.textContent = "خرید (BUY)";
+        entrySignal.style.color = "#29d391";
+        entryDetails.textContent =
+          "هم‌جهتی صعودی سه تایم‌فریم تأیید شده؛ پیش از ورود، قیمت کارگزاری و حد ضرر را بررسی کن.";
+      } else if (alignedSell) {
+        entrySignal.textContent = "فروش (SELL)";
+        entrySignal.style.color = "#ff647c";
+        entryDetails.textContent =
+          "هم‌جهتی نزولی سه تایم‌فریم تأیید شده؛ پیش از ورود، قیمت کارگزاری و حد ضرر را بررسی کن.";
+      } else {
+        entrySignal.textContent = "عدم ورود";
+        entrySignal.style.color = "#d9b66c";
+        entryDetails.textContent =
+          "تأیید کافی در سه تایم‌فریم وجود ندارد؛ منتظر شرایط بهتر بمان.";
+      }
 
     }catch(error){
       el("proTimeframes").textContent="خطا: "+error.message;
