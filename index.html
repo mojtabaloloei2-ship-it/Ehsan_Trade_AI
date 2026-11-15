@@ -501,24 +501,33 @@ detail.innerHTML=
     oscillator.stop(audioContext.currentTime + 0.25);
   }
 
-  el("enableSound").addEventListener("click", async function(){
-    try{
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if(!AudioCtx) throw new Error("صدا پشتیبانی نمی‌شود");
+   document.addEventListener("DOMContentLoaded", function(){
 
-      audioContext = audioContext || new AudioCtx();
+    el("enableSound").addEventListener("click", async function(){
+      el("soundStatus").textContent = "در حال فعال‌سازی صدا...";
 
-      if(audioContext.state === "suspended"){
-        await audioContext.resume();
+      try{
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) throw new Error("صدا پشتیبانی نمی‌شود");
+
+        audioContext = audioContext || new AudioCtx();
+
+        if(audioContext.state === "suspended"){
+          await audioContext.resume();
+        }
+
+        soundEnabled = true;
+        el("soundStatus").textContent = "هشدار صوتی فعال است.";
+
+        playSignalAlert();
+
+      }catch(error){
+        el("soundStatus").textContent =
+          "فعال‌سازی صدا ناموفق بود؛ تنظیمات مرورگر را بررسی کن.";
       }
+    });
 
-      soundEnabled = true;
-      el("soundStatus").textContent = "هشدار صوتی فعال است.";
-    }catch(error){
-      el("soundStatus").textContent =
-        "فعال‌سازی صدا ناموفق بود؛ تنظیمات مرورگر را بررسی کن.";
-    }
-  });
+  }); 
 
   function ema(values,period){
     if(values.length<period)return null;
