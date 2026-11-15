@@ -492,6 +492,19 @@ detail.innerHTML=
   const el=id=>document.getElementById(id);
 
   let soundEnabled = false;
+ window.ehsanSpeakAlert = function(text) {
+  if (!soundEnabled || !("speechSynthesis" in window)) return;
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+
+  const message = new SpeechSynthesisUtterance(text);
+  message.lang = "fa-IR";
+  message.rate = 0.9;
+  message.volume = 1;
+
+  synth.speak(message);
+};
   let previousSignal = "NONE";
   let audioContext = null;
 
